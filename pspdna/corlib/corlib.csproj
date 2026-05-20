@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    DNA corlib project.
+
+    Key settings:
+      NoStdLib / NoCompilerStandardLib  — do not reference the BCL.
+        DNA ships its own System.* types compiled from source.
+        Without these flags the compiler would inject references to
+        mscorlib.dll and the build would produce BCL-dependent IL that
+        the DNA interpreter cannot load.
+
+      LangVersion 7.3 — the maximum tested version with PSPDNA.
+        7.3 supports: unmanaged constraint, ref returns, in params,
+        fixed-size buffers in generics. Avoid C# 8+ features (nullable
+        reference types, default interface members, records).
+
+      net40 target — used for IDE tooling only.
+        Actual DNA builds use the raw 'csc' command in the Makefile
+        with -nostdlib -target:Library -unsafe -langversion:7.3
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net40</TargetFramework>
+    <OutputType>Library</OutputType>
+    <NoStdLib>true</NoStdLib>
+    <NoCompilerStandardLib>true</NoCompilerStandardLib>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
+    <Optimize>true</Optimize>
+    <WarningLevel>3</WarningLevel>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>corlib</AssemblyName>
+    <RootNamespace>Psp</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>

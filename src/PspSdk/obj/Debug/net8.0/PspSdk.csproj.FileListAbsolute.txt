@@ -1,0 +1,13 @@
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\obj\Debug\net8.0\PspSdk.GeneratedMSBuildEditorConfig.editorconfig
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\obj\Debug\net8.0\PspSdk.AssemblyInfoInputs.cache
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\obj\Debug\net8.0\PspSdk.AssemblyInfo.cs
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\obj\Debug\net8.0\PspSdk.csproj.CoreCompileInputs.cache
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\bin\Debug\net8.0\PspSdk.deps.json
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\bin\Debug\net8.0\PspSdk.dll
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\bin\Debug\net8.0\PspSdk.pdb
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\bin\Debug\net8.0\PspSdk.xml
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\obj\Debug\net8.0\PspSdk.dll
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\obj\Debug\net8.0\refint\PspSdk.dll
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\obj\Debug\net8.0\PspSdk.xml
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\obj\Debug\net8.0\PspSdk.pdb
+D:\MOVEMENT\DESKTOP\PERSONAL\psp-csharp\src\PspSdk\obj\Debug\net8.0\ref\PspSdk.dll

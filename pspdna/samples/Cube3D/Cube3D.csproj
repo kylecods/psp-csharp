@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net40</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <NoStdLib>true</NoStdLib>
+    <NoCompilerStandardLib>true</NoCompilerStandardLib>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
+    <Optimize>true</Optimize>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>Cube3D</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Reference our extended corlib (includes Psp.Gu, Psp.Gum, Psp.Audio) -->
+    <Reference Include="corlib">
+      <HintPath>..\..\corlib\bin\Release\net40\corlib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s \"https://raw.githubusercontent.com/pspdev/pspsdk/main/lib/build.mak\")",
+      "Bash(curl -s \"https://api.github.com/repos/pspdev/pspsdk/contents/lib\")"
+    ]
+  }
+}
