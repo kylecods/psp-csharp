@@ -23,10 +23,36 @@ MANAGED_DIR   := $(BUILD_DIR)/managed
 NATIVE_DIR    := $(BUILD_DIR)/native
 
 # ── C# compiler ───────────────────────────────────────────────────────────
-# Use the csc bundled with .NET SDK 6.0.  'dotnet-script run' cannot
-# cross-compile for DNA; we need raw csc with -nostdlib.
-CSC           := dotnet-csc
-CSC_FLAGS     := -nostdlib -unsafe -optimize+ -langversion:7.3 -warn:3
+# We need raw Roslyn csc with -nostdlib, NOT 'dotnet build' (MSBuild).
+# 'dotnet build' passes all args to MSBuild; csc flags like -nostdlib are
+# unknown to MSBuild and will cause MSB1001 errors.
+#
+# Install the standalone csc global tool once:
+#   dotnet tool install --global Microsoft.Net.Sdk.Compilers
+# Then 'csc' is on PATH.  Verify with: csc --version
+#
+# Alternatively on Linux/WSL, locate the Roslyn binary embedded in the SDK:
+#   $(shell dotnet --list-runtimes | ... )
+# but the global tool install is simpler.
+CSC           := csc
+CSC_FLAGS     := -nostdlib -unsafe -optimize+ -langversion:7.3 -warn:3 \
+                 -noconfig -nologo
+
+# ── Corlib source discovery ────────────────────────────────────────────────
+# Our corlib/ already contains BOTH halves needed for -nostdlib compilation:
+#
+#   corlib/System/         — PSPDNA primitive types: Object, Int32, Math, …
+#   corlib/System.*/       — Collections, IO, Text, Threading, Reflection, …
+#   corlib/Psp/            — our PSP wrappers: Audio, Gu, Gum, Controls, …
+#   corlib/Properties/     — AssemblyInfo.cs
+#
+# No external PSPDNA clone is required.  All sources live here.
+#
+# We use 'find' to collect every .cs under corlib/, excluding MSBuild
+# intermediates in obj/ and bin/.
+CORLIB_ALL_SRCS := $(shell find corlib -name '*.cs' \
+                       -not -path 'corlib/obj/*' \
+                       -not -path 'corlib/bin/*')
 
 # ── Native compilation ────────────────────────────────────────────────────
 CC            := psp-gcc
@@ -44,13 +70,10 @@ NEW_NATIVE_SRCS := \
 
 NEW_NATIVE_OBJS := $(patsubst native/%.c,$(NATIVE_DIR)/%.o,$(NEW_NATIVE_SRCS))
 
-# ── Managed assemblies ────────────────────────────────────────────────────
-CORLIB_SRCS   := $(wildcard corlib/Psp/*.cs)
+# ── Managed assembly paths ────────────────────────────────────────────────
 CORLIB_OUT    := $(MANAGED_DIR)/corlib.dll
-
 CUBE3D_SRCS   := samples/Cube3D/Program.cs
 CUBE3D_OUT    := $(MANAGED_DIR)/Cube3D.dll
-
 AUDIO_SRCS    := samples/AudioTest/Program.cs
 AUDIO_OUT     := $(MANAGED_DIR)/AudioTest.dll
 
@@ -63,7 +86,7 @@ EBOOT         := $(BUILD_DIR)/EBOOT.PBP
 PARAM_SFO     := $(BUILD_DIR)/PARAM.SFO
 
 # ── Phony targets ─────────────────────────────────────────────────────────
-.PHONY: all managed native clean dirs
+.PHONY: all managed native clean dirs check-csc
 
 all: dirs managed native package
 	@echo ""
@@ -76,16 +99,37 @@ all: dirs managed native package
 dirs:
 	@mkdir -p $(BUILD_DIR) $(MANAGED_DIR) $(NATIVE_DIR)
 
+# ── csc prerequisite check ────────────────────────────────────────────────
+check-csc:
+ifeq ($(shell command -v $(CSC) 2>/dev/null),)
+	@echo ""
+	@echo "ERROR: '$(CSC)' not found on PATH."
+	@echo ""
+	@echo "  Install the standalone Roslyn compiler tool once:"
+	@echo "    dotnet tool install --global Microsoft.Net.Sdk.Compilers"
+	@echo "  Then 'csc' is available system-wide."
+	@echo ""
+	@exit 1
+endif
+
 # ── Managed compilation ───────────────────────────────────────────────────
-# Phase 1: compile the corlib (Psp.* types + internal call declarations)
-$(CORLIB_OUT): $(CORLIB_SRCS) | dirs
-	@echo "[CSC] corlib.dll"
+# Phase 1: compile corlib (all sources in corlib/ in one -nostdlib shot).
+#
+# Why one compilation?
+#   -nostdlib strips ALL predefined types.  csc special-cases System.Object:
+#   it must be compiled IN THE SAME invocation as code that depends on it,
+#   not in a referenced .dll.  Since our corlib/ already contains both the
+#   System.* primitives (PSPDNA half) and the Psp.* wrappers (our half),
+#   we just feed every .cs file in one go.
+$(CORLIB_OUT): check-csc $(CORLIB_ALL_SRCS) | dirs
+	@echo "[CSC] corlib.dll  ($(words $(CORLIB_ALL_SRCS)) source files)"
 	$(CSC) $(CSC_FLAGS) \
 	    -target:library \
 	    -out:$@ \
-	    $(CORLIB_SRCS)
+	    $(CORLIB_ALL_SRCS)
 
-# Phase 2: compile sample apps referencing corlib
+# Phase 2: compile sample apps referencing corlib.
+# Sample code only references Psp.* types, so corlib.dll is the only ref.
 $(CUBE3D_OUT): $(CUBE3D_SRCS) $(CORLIB_OUT) | dirs
 	@echo "[CSC] Cube3D.dll"
 	$(CSC) $(CSC_FLAGS) \

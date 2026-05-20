@@ -14,9 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="corlib">
-      <HintPath>..\..\corlib\bin\Release\net40\corlib.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\corlib\corlib.csproj" />
   </ItemGroup>
 
 </Project>

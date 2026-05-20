@@ -14,10 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Reference our extended corlib (includes Psp.Gu, Psp.Gum, Psp.Audio) -->
-    <Reference Include="corlib">
-      <HintPath>..\..\corlib\bin\Release\net40\corlib.dll</HintPath>
-    </Reference>
+    <!-- ProjectReference resolves corlib regardless of Debug/Release configuration -->
+    <ProjectReference Include="..\..\corlib\corlib.csproj" />
   </ItemGroup>
 
 </Project>

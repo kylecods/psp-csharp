@@ -1,143 +1,106 @@
-// Psp/BasicGraphics2.cs
-// High-level 2D / sprite rendering layer.
-// All drawing ultimately calls sceGu* via internal calls on the C side.
-//
-// This module handles GU initialisation, VRAM allocation, and
-// double-buffered rendering internally so game code never has to
-// deal with display lists, buffer offsets, or sceGuStart/Finish.
-//
-// For 3D rendering or fine-grained GU control, use Psp.Gu directly.
-
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Psp
 {
+    // If you are using the app menu, you really can't mix
+    // graphics libs... you must use BasicGraphics2...
     public static class BasicGraphics2
     {
-        // ── Lifecycle ─────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Initialise the GU, allocate framebuffers in VRAM, and enable
-        /// the display.  Call once at startup before any drawing.
-        /// </summary>
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void Init();
+        extern public static void Init();
 
-        /// <summary>
-        /// Shut down the GU.  Call before ExitGame().
-        /// </summary>
+        /// <summary>Shut down the display system. Call before Kernel.ExitGame().</summary>
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void Term();
+        extern public static void Term();
 
-        // ── Per-frame ─────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Present the back buffer to the display, wait for vblank, and
-        /// swap draw and display buffers.  Call at the end of each frame.
-        /// </summary>
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void SwapBuffers();
+        extern static void NativeClear(uint color);
 
-        // ── Drawing ───────────────────────────────────────────────────────
+        public static void Clear(Color color)
+        {
+            NativeClear(color.ToNative());
+        }
 
-        /// <summary>
-        /// Fill the entire back buffer with a solid colour.
-        /// </summary>
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void Clear(Color color);
+        extern public static void SwapBuffers();
 
-        /// <summary>
-        /// Draw a solid filled rectangle on the back buffer.
-        /// Coordinates are screen-space pixels (0,0 = top-left).
-        /// </summary>
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void DrawRect(int x, int y, int width, int height, Color color);
+        extern static void NativeDrawRect(int x, int y, int w, int h, uint color);
 
-        /// <summary>
-        /// Draw a horizontal line.
-        /// </summary>
+        public static void DrawRect(int x, int y, int w, int h, Color color)
+        {
+            NativeDrawRect(x, y, w, h, color.ToNative());
+        }
+
+        public static void DrawRect(Rect rect, Color color)
+        {
+            DrawRect(rect.X, rect.Y, rect.Width, rect.Height, color);
+        }
+
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void DrawLine(int x1, int y1, int x2, int y2, Color color);
+        extern static void NativeDrawText(string text, int x, int y, uint color);
 
-        /// <summary>
-        /// Render a null-terminated ASCII string at pixel position (x, y)
-        /// using the embedded 8×8 bitmap font.
-        /// </summary>
+        public static void DrawText(string text, int x, int y, Color color)
+        {
+            NativeDrawText(text, x, y, color.ToNative());
+        }
+
+        /// <summary>Convenience overload with (x, y, text, color) parameter order.</summary>
+        public static void DrawText(int x, int y, string text, Color color)
+        {
+            NativeDrawText(text, x, y, color.ToNative());
+        }
+
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void DrawText(int x, int y, string text, Color color);
+        extern static System.IntPtr NativeLoadSurface(string fileName);
 
-        // ── Texture / surface ─────────────────────────────────────────────
-
-        /// <summary>
-        /// Load an image from the memory stick into a Surface object.
-        /// Supported formats: BMP, PNG (24-bit or 32-bit).
-        /// Path is relative to the EBOOT.PBP directory (ms0:/PSP/GAME/MyApp/).
-        /// Returns null if the file cannot be loaded.
-        /// </summary>
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern Surface LoadSurface(string path);
+        extern static System.IntPtr NativeCreateTexture(System.IntPtr surface);
 
-        /// <summary>
-        /// Upload a Surface to GPU-accessible VRAM as a Texture.
-        /// Dimensions must be powers of 2 (hardware limitation).
-        /// </summary>
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern Texture CreateTexture(Surface surface);
-
-        /// <summary>
-        /// Draw a Texture at screen position (x, y) scaled to (w, h) pixels.
-        /// </summary>
+        extern static int NativeDrawTexture(System.IntPtr texture, int x, int y, int w, int h);
+  
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void DrawTexture(Texture texture, int x, int y, int width, int height);
+        extern static int NativeSetColorKey(System.IntPtr surface, int flag, uint key);
 
-        /// <summary>
-        /// Draw a sub-region of a Texture.
-        /// srcX/srcY/srcW/srcH are texel coordinates inside the texture.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void DrawTextureRegion(
-            Texture texture,
-            int srcX, int srcY, int srcWidth, int srcHeight,
-            int dstX, int dstY, int dstWidth, int dstHeight);
+        public static Surface CreateSurface(string bitmap, bool useKey = false, Color key = default)
+        {
+            var surface = NativeLoadSurface(bitmap);
+            if (useKey)
+            {
+                NativeSetColorKey(surface, useKey ? 1: 0, key.ToNative());
+            }
 
-        // ── Screen constants (pure C#) ────────────────────────────────────
+            return new Surface { Handle = surface };
+        }
 
-        /// <summary>Screen width in pixels.</summary>
-        public const int ScreenWidth  = 480;
+        public static Texture CreateTexture(Surface surface)
+        {
+            var handle = surface.Handle;
+            return new Texture
+            {
+                Surface = surface,
+                Handle = NativeCreateTexture(handle)
+            };
+        }
 
-        /// <summary>Screen height in pixels.</summary>
-        public const int ScreenHeight = 272;
-
-        /// <summary>Screen centre X.</summary>
-        public const int CentreX = ScreenWidth / 2;
-
-        /// <summary>Screen centre Y.</summary>
-        public const int CentreY = ScreenHeight / 2;
+        public static int DrawTexture(Texture texture, int x, int y, int w, int h)
+        {
+            var handle = texture.Handle;
+            return NativeDrawTexture(handle, x, y, w, h);
+        }
     }
 
-    // ── Opaque handle types ───────────────────────────────────────────────
-    // These are managed wrappers around C-side pointers.
-    // The actual data lives in native memory; C# holds a HEAP_PTR to a
-    // wrapper object allocated by the internal call.
-
+    // this is a first pass... this will probably change
     public class Surface
     {
-        // Opaque — the native side reads internal fields it allocated.
-        // C# code should only pass Surface instances to CreateTexture or
-        // DrawText (for font surfaces).
+        public System.IntPtr Handle { get; internal set; } = System.IntPtr.Zero;
     }
 
+    // this is a first pass... this will probably change
     public class Texture
     {
-        // Opaque — holds a reference to VRAM pixel data.
-        // Width and Height are exposed for layout calculations.
-        public int Width  { get { return GetWidth();  } }
-        public int Height { get { return GetHeight(); } }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private extern int GetWidth();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private extern int GetHeight();
+        public Surface Surface { get; internal set; }
+        public System.IntPtr Handle { get; internal set; } = System.IntPtr.Zero;
     }
 }
