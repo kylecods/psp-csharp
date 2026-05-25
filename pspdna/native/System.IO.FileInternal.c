@@ -42,10 +42,6 @@
 
 #define FILEATTRIBUTES_DIRECTORY 0x00010
 
-#ifdef _WIN32
-#else 
-#include <glob.h>
-#endif
 
 tAsyncCall* System_IO_FileInternal_Open(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 filenameLen;

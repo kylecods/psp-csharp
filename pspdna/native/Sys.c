@@ -210,14 +210,20 @@ void initLogfile()
 {
 	if(pLogger == NULL)
 	{
-		pLogger=fopen("log.txt", "w");
+		pLogger = fopen("log.txt", "w");
 		if(pLogger == NULL)
 		{
+#if defined(__PSP__)
+			// On PSP the log file path depends on CWD being set first.
+			// If it fails, continue without a logfile — debug output goes
+			// to the PSP debug screen via the printf redirect in dna.c.
+			return;
+#else
 			Crash("logfile could not be opened");
+#endif
 		}
-        
-		fseek(pLogger, 0, SEEK_END); // got to the end of the file
 
+		fseek(pLogger, 0, SEEK_END);
 		log_s("--------------------\nstarted\n\n");
 	}
 }
@@ -229,6 +235,7 @@ void closeLogfile()
 		log_s("\nended\n--------------------\n");
 		fflush(pLogger);
 		fclose(pLogger);
+		pLogger = NULL;
 	}
 }
 
@@ -236,7 +243,12 @@ void log_s(char *pMsg, ...)
 {
 	if(pLogger == NULL)
 	{
+#if defined(__PSP__)
+		// No logfile open — silently discard (debug screen is used instead)
+		return;
+#else
 		Crash("logfile is not open");
+#endif
 	}
 
 	va_list va;
