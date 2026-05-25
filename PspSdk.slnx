@@ -1,8 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/PspSdk/PspSdk.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/PspSdk.Tests/PspSdk.Tests.csproj" />
-  </Folder>
-</Solution>
