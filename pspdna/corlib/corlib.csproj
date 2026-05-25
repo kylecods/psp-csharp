@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    DNA corlib project.
+
+    Key settings:
+      NoStdLib / NoCompilerStandardLib  - do not reference the BCL.
+        DNA ships its own System.* types compiled from source (they live
+        alongside our Psp.* files in this corlib directory).
+        Without these flags the compiler would inject references to
+        mscorlib.dll and produce BCL-dependent IL that DNA cannot load.
+
+      LangVersion 7.3 - the maximum tested version with PSPDNA.
+        Supports: unmanaged constraint, ref returns, in params,
+        fixed-size buffers in generics. Avoid C# 8+ features.
+
+      net40 target - used for IDE tooling and ProjectReference resolution.
+        Actual DNA builds use raw csc -nostdlib in the Makefile or
+        build-managed.ps1 -DnaCompat.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net40</TargetFramework>
+    <OutputType>Library</OutputType>
+    <NoStdLib>true</NoStdLib>
+    <NoCompilerStandardLib>true</NoCompilerStandardLib>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
+    <Optimize>true</Optimize>
+    <WarningLevel>3</WarningLevel>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>corlib</AssemblyName>
+    <RootNamespace>Psp</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!--
+    Exclude the System.* source trees from the dotnet build compilation.
+    The net40 SDK already provides System.Object, System.Int32, etc. via
+    the .NET Framework reference assemblies. Compiling the PSPDNA System.*
+    replacements on top of those would produce CS0101 duplicate-definition
+    errors. The System.* sources are only needed for the raw csc -nostdlib
+    path (build-managed.ps1 -DnaCompat), where no framework assemblies
+    are present.
+  -->
+  <ItemGroup>
+    <Compile Remove="System\**\*.cs" />
+    <Compile Remove="System.*\**\*.cs" />
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+</Project>
