@@ -42,6 +42,7 @@
 
 #define FILEATTRIBUTES_DIRECTORY 0x00010
 
+
 tAsyncCall* System_IO_FileInternal_Open(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	U32 filenameLen;
 	STRING2 filename2;
@@ -219,13 +220,13 @@ tAsyncCall* System_IO_FileInternal_GetFileAttributes(PTR pThis_, PTR pParams, PT
 }
 
 tAsyncCall* System_IO_FileInternal_GetFileSystemEntries(PTR pThis_, PTR pParams, PTR pReturnValue) {
-	//HEAP_PTR pathHP = ((HEAP_PTR*)pParams)[0];
+	HEAP_PTR pathHP = ((HEAP_PTR*)pParams)[0];
 	HEAP_PTR pathPatternHP = ((HEAP_PTR*)pParams)[1];
 	U32 attrs = ((U32*)pParams)[2];
 	U32 mask = ((U32*)pParams)[3];
 	U32* pError = ((U32**)pParams)[4];
-	U32 /*pathLen,*/ pathPatternLen;
-	//STRING2 path = SystemString_GetString(pathHP, &pathLen);
+	U32 pathLen, pathPatternLen;
+	STRING2 path = SystemString_GetString(pathHP, &pathLen);
 	STRING2 pathPattern = SystemString_GetString(pathPatternHP, &pathPatternLen);
 	HEAP_PTR retArray;
 	U32 tempStoreSize = 32, tempStoreOfs = 0, i;
@@ -233,10 +234,13 @@ tAsyncCall* System_IO_FileInternal_GetFileSystemEntries(PTR pThis_, PTR pParams,
 	PTR arrayElements;
 #ifdef _WIN32
 	unsigned short pathPatternNullTerm[256];
+	unsigned short pathNullTerm[256];
 	HANDLE hFind;
 	WIN32_FIND_DATA find;
 	memcpy(pathPatternNullTerm, pathPattern, pathPatternLen << 1);
 	pathPatternNullTerm[pathPatternLen] = 0;
+	memcpy(pathNullTerm, path, pathLen << 1);
+	pathNullTerm[pathLen] = 0;
 	hFind = FindFirstFileW(pathPatternNullTerm, &find);
 	if (hFind != INVALID_HANDLE_VALUE) {
 		do {
@@ -247,7 +251,14 @@ tAsyncCall* System_IO_FileInternal_GetFileSystemEntries(PTR pThis_, PTR pParams,
 					tempStoreSize <<= 1;
 					pTempStore = realloc(pTempStore, tempStoreSize * sizeof(void*));
 				}
-				str = SystemString_FromCharPtrUTF16(find.cFileName);
+				// Prepend directory path so callers get "dir/filename" not just "filename"
+				unsigned short fullPath[512];
+				U32 fnLen = (U32)wcslen(find.cFileName);
+				memcpy(fullPath, pathNullTerm, pathLen << 1);
+				fullPath[pathLen] = '/';
+				memcpy(fullPath + pathLen + 1, find.cFileName, fnLen << 1);
+				fullPath[pathLen + 1 + fnLen] = 0;
+				str = SystemString_FromCharPtrUTF16(fullPath);
 				// Need to temporarily make these undeletable, in case a GC happens before they're in the array
 				Heap_MakeUndeletable(str);
 				pTempStore[tempStoreOfs++] = str;

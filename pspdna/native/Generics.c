@@ -222,6 +222,7 @@ tMD_MethodDef* Generics_GetMethodDefFromCoreMethod
 	pMethod->signature = pCoreMethod->signature;
 	pMethod->vTableOfs = pCoreMethod->vTableOfs;
 	pMethod->ppMethodTypeArgs = pInst->pTypeArgs;
+	pMethod->numGenericParams = numTypeArgs;
 
 	MetaData_Fill_MethodDef(pParentType, pMethod, pParentType->ppClassTypeArgs, pInst->pTypeArgs);
 

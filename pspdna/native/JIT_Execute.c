@@ -31,6 +31,7 @@
 #include "MethodState.h"
 #include "Finalizer.h"
 #include "Delegate.h"
+#include "Generics.h"
 //#include "PInvoke.h"
 
 #include "System.String.h"
@@ -240,7 +241,8 @@ U32 opcodeNumUses[JIT_OPCODE_MAXNUM];
 	jitCodeInfo[op].pEnd = pAddr; \
 	jitCodeInfo[op].isDynamic = 0x100 | (extraBytes & 0xff)
 
-#define RUN_FINALIZER() {tMethodState *pMS = RunFinalizer(pThread);if(pMS) {CHANGE_METHOD_STATE(pMS);}}
+// Only run finalizers on thread 1 (main/first thread) for deterministic ordering
+#define RUN_FINALIZER() if(pThread->threadID == 1) {tMethodState *pMS = RunFinalizer(pThread);if(pMS) {CHANGE_METHOD_STATE(pMS);}}
 
 U32 JIT_Execute(tThread *pThread, U32 numInst) {
 	tJITted *pJIT;
@@ -1250,9 +1252,12 @@ allCallStart:
 			}
 		} else if (op == JIT_CALL_INTERFACE) {
 			tMD_TypeDef *pInterface, *pThisType;
+			tMD_MethodDef *pInterfaceCallMethod;
 			U32 vIndex;
 			I32 i;
 
+			// Save the interface method def before vTable lookup so we can recover generic type args afterwards
+			pInterfaceCallMethod = pCallMethod;
 			pInterface = pCallMethod->pParentType;
 			// Get the actual object that is becoming 'this'
 			heapPtr = *(HEAP_PTR*)(pCurEvalStack - pCallMethod->parameterStackSize);
@@ -1274,6 +1279,14 @@ allCallStart:
 			}
 			Assert(vIndex != 0xffffffff);
 			pCallMethod = pThisType->pVTable[vIndex];
+			// If the interface method was a generic instantiation, apply its type args to the concrete method.
+			// Without this, calling a generic method through a generic interface from a generic call-site loses the type args.
+			if (pInterfaceCallMethod->numGenericParams > 0 && pInterfaceCallMethod->ppMethodTypeArgs != NULL) {
+				pCallMethod = Generics_GetMethodDefFromCoreMethod(
+					pCallMethod, pCallMethod->pParentType,
+					pInterfaceCallMethod->numGenericParams,
+					pInterfaceCallMethod->ppMethodTypeArgs);
+			}
 		}
 callMethodSet:
 		//printf("Calling method: %s\n", Sys_GetMethodDesc(pCallMethod));

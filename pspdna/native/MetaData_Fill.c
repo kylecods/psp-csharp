@@ -96,8 +96,7 @@ void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, tMD_MethodDef *pMethodDef
 	sig = MetaData_GetBlob(pMethodDef->signature, NULL);
 	entry = MetaData_DecodeSigEntry(&sig);
 	if (entry & SIG_METHODDEF_GENERIC) {
-		// Has generic parameters. Read how many, but don't care about the answer
-		MetaData_DecodeSigEntry(&sig);
+		pMethodDef->numGenericParams = MetaData_DecodeSigEntry(&sig);
 	}
 	pMethodDef->numberOfParameters = MetaData_DecodeSigEntry(&sig) + (METHOD_ISSTATIC(pMethodDef)?0:1);
 	pMethodDef->pReturnType = Type_GetTypeFromSig(pMethodDef->pMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs);
@@ -124,13 +123,10 @@ void MetaData_Fill_MethodDef(tMD_TypeDef *pParentType, tMD_MethodDef *pMethodDef
 		U32 size;
 
 		pTypeDef = Type_GetTypeFromSig(pMethodDef->pMetaData, &sig, ppClassTypeArgs, ppMethodTypeArgs);
-		//if (pTypeDef != NULL) {
-			MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
-			size = pTypeDef->stackSize;
-		//} else {
-		//	// If this method has generic-type-argument arguments, then we can't do anything very sensible yet
-		//	size = 0;
-		//}
+		MetaData_Fill_TypeDef(pTypeDef, NULL, NULL);
+		// Mirrors the same guard in MetaData_Fill_FieldDef: stackSize may be 0 when the type is mid-fill
+		// (e.g. nested class referencing the containing class — circular fill dependency)
+		size = (pTypeDef->stackSize > 0) ? pTypeDef->stackSize : sizeof(void*);
 		pMethodDef->pParams[i].pTypeDef = pTypeDef;
 		pMethodDef->pParams[i].offset = totalSize;
 		pMethodDef->pParams[i].size = size;

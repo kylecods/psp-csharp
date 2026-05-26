@@ -24,7 +24,7 @@ bool circle = false;
 bool cross = false;
 
 bool start = false;
-bool select = false;
+bool _select = false;
 
 #endif
 
@@ -103,7 +103,7 @@ void pollLatch()
 				break;
 
 			case SDLK_o:
-				select = true;
+				_select = true;
 				break;
 
 			case SDLK_p:
@@ -147,7 +147,7 @@ void pollLatch()
 				square = false;
 
 			case SDLK_o:
-				select = false;
+				_select = false;
 				break;
 
 			case SDLK_p:
@@ -186,7 +186,7 @@ int isKeyHold(int key)
 	case PSP_CTRL_START:
 		return start;
 	case PSP_CTRL_SELECT:
-		return select;
+		return _select;
 	default:
 		break;
 	}
@@ -221,7 +221,7 @@ int isKeyDown(int key)
 	case PSP_CTRL_START:
 		return start;
 	case PSP_CTRL_SELECT:
-		return select;
+		return _select;
 	default:
 		break;
 	}
@@ -256,7 +256,7 @@ int isKeyUp(int key)
 	case PSP_CTRL_START:
 		return start;
 	case PSP_CTRL_SELECT:
-		return select;
+		return _select;
 	default:
 		break;
 	}

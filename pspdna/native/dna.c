@@ -38,7 +38,7 @@
 
 PSP_MODULE_INFO("dna", PSP_MODULE_USER, VERS, REVS);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER | PSP_THREAD_ATTR_VFPU);
-PSP_HEAP_SIZE_MAX();
+// PSP_HEAP_SIZE_MAX();
 #endif
 
 #include "Compat.h"
@@ -52,9 +52,6 @@ PSP_HEAP_SIZE_MAX();
 #include "System.Net.Sockets.Socket.h"
 #include "MethodState.h"
 
-#if defined(__PSP__)
-#define printf pspDebugScreenPrintf
-#endif
 
 int dna_main(int argc, char **argp);
 
@@ -82,7 +79,7 @@ int run(char *name)
 
 extern char *pAppName;
 const char APP_MENU[] = "Dna.AppMenu.exe";
-const char APP_LEGACY[] = "app.exe";
+const char APP_LEGACY[] = "Dna.AppMenu.exe";
 
 #ifndef F_OK
 #define F_OK 0
@@ -90,27 +87,47 @@ const char APP_LEGACY[] = "app.exe";
 
 int main(int argc, char *argv[])
 {
-	initLogfile();
-
 #if defined(__PSP__)
+	// 1. Debug screen first — so any subsequent printf/Crash output is visible
 	pspDebugScreenInit();
 	setupExitCallback();
 
 	sceCtrlSetSamplingCycle(0);
 	sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
+
+	// 2. Set CWD to the game folder before any file I/O.
+	// argv[0] = "ms0:/PSP/GAME/pspdna/EBOOT.PBP" — strip the filename.
+	if (argc > 0 && argv[0] != NULL && argv[0][0] != '\0') {
+		char gamedir[256];
+		strncpy(gamedir, argv[0], sizeof(gamedir) - 1);
+		gamedir[sizeof(gamedir) - 1] = '\0';
+		char *slash = strrchr(gamedir, '/');
+		if (slash != NULL) {
+			*slash = '\0';
+			sceIoChdir(gamedir);
+		}
+	}
 #endif
 
-	int result = 0;
+	// 3. Open log file now that CWD and debug screen are ready
+	initLogfile();
 
+	int result = 0;
 	int shouldJustExit = 0;
 
-	// we look for an "app menu" exe....
-	// if there is not one we fall back to
-	// loading "app.exe".... which allows
-	// the runtime to me used for custom
-	// apps...
-	if (access(APP_MENU, F_OK) == 0)
+	if (argc > 1)
 	{
+		// run the file passed on the command line directly, no menu
+		result = run(argv[1]);
+		shouldJustExit = 1;
+	}
+	else if (access(APP_MENU, F_OK) == 0)
+	{
+		// we look for an "app menu" exe....
+		// if there is not one we fall back to
+		// loading "app.exe".... which allows
+		// the runtime to me used for custom
+		// apps...
 		result = run(APP_MENU);
 
 		// the app menu will set pAppName to something

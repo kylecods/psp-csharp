@@ -6,14 +6,14 @@
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
     <Filter Include="Source Files\Internal">
-      <UniqueIdentifier>{c12e7531-907c-413c-ba5e-f95d357220dd}</UniqueIdentifier>
+      <UniqueIdentifier>{696b738e-1ec5-467f-8455-190fd5db2db5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Header Files\Internal">
-      <UniqueIdentifier>{f531554b-60af-4c80-83bf-72601c4ed012}</UniqueIdentifier>
+      <UniqueIdentifier>{7925541d-6090-41ec-a9d4-26881ea15522}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
@@ -138,39 +138,9 @@
     <ClCompile Include="System.WeakReference.c">
       <Filter>Source Files\Internal</Filter>
     </ClCompile>
-    <ClCompile Include="graph_sdl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Psp.BasicGraphics.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Psp.BasicGraphics2.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Psp.Controls.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Psp.Debug.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Psp.Display.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Psp.Kernel.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="callback.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="controls.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CIL_OpCodes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CLIFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Compat.h">
@@ -298,33 +268,6 @@
     </ClInclude>
     <ClInclude Include="System.WeakReference.h">
       <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="dummypspkeys.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="graph.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Psp.BasicGraphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Psp.Controls.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Psp.Debug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Psp.Display.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Psp.Kernel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="callback.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="controls.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

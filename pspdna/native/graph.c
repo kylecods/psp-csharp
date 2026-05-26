@@ -99,7 +99,7 @@ void drawImageGraf(int x, int y, int w, int h, uint32_t* image)
     {
         for (int x1 = 0; x1 < w; x1++)
         {
-            uint32_t* p = image[pixelProgress];
+            uint32_t* p = (int32_t *)image[pixelProgress];
             draw_buffer[x1 + offset +y1 * screenb_w] = *p;
             pixelProgress += 1;
         }

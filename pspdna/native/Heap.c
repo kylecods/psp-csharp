@@ -446,6 +446,9 @@ void Heap_SetRoots(tHeapRoots *pHeapRoots, void *pRoots, U32 sizeInBytes) {
 	pRootEntry->pMem = pRoots;
 }
 
+// TODO (Bug 1 - memory leak): A memory leak exists somewhere in the runtime. Known permanent allocations
+// (mallocForever, tJITted, tMD_MethodDef::pParams) are intentional. Run under a memory profiler with a
+// long-running workload to identify the actual leak site — likely in JIT compilation or generic instantiation paths.
 HEAP_PTR Heap_Alloc(tMD_TypeDef *pTypeDef, U32 size) {
 	tHeapEntry *pHeapEntry;
 	U32 totalSize;

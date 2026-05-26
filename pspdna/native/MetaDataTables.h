@@ -240,6 +240,8 @@ struct tMD_MethodDef_ {
 	U32 vTableOfs;
 	// If this is method has generic parameters, then store the method type args
 	tMD_TypeDef **ppMethodTypeArgs;
+	// Number of generic type arguments (0 for non-generic; set for both definitions and instantiations)
+	U32 numGenericParams;
 	// If this is a generic core method, then store type instances here.
 	tGenericMethodInstance *pGenericMethodInstances;
 
